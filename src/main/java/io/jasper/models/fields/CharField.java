@@ -16,4 +16,7 @@ public class CharField extends Field<String> {
         }
         super.setValue(value);
     }
+    public int getMaxLength(){
+        return this.maxLength;
+    }
 }

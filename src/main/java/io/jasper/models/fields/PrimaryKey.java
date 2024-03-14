@@ -1,16 +1,11 @@
 package io.jasper.models.fields;
 
-public class PrimaryKey {
-    private int pk;
-
+public class PrimaryKey extends Field<Integer> {
     public PrimaryKey() {
-        this.pk = 0;
+        setValue(0);
     }
     public void increment(){
-        this.pk += 1;
-    }
-
-    public int getPk() {
-        return pk;
+        int value = this.getValue();
+        this.setValue(value+1);
     }
 }
