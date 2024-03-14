@@ -1,11 +1,14 @@
 package io.jasper.models.fields;
 
-public class PrimaryKey extends Field<Integer> {
-    public PrimaryKey() {
-        setValue(0);
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class PrimaryKey {
+    private static final AtomicInteger idGenerator = new AtomicInteger();
+    private final int value;
+    public PrimaryKey(){
+        this.value = idGenerator.incrementAndGet();
     }
-    public void increment(){
-        int value = this.getValue();
-        this.setValue(value+1);
+    public int getValue(){
+        return this.value;
     }
 }
