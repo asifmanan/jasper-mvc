@@ -1,41 +1,52 @@
 package io.jasper.models;
 
-import io.jasper.models.fields.IntegerField;
+import io.jasper.managers.DefaultObjectManager;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Model {
-    private static final Map<Class<? extends Model>, Map<Integer, Model>> tables = new HashMap<>();
-    private static final Map<Class<? extends Model>, AtomicInteger> idGenerators = new HashMap<>();
-    protected IntegerField pk = new IntegerField();
-    public Model(){
-        int id = generateIdForClass(getClass());
-        this.pk.setValue(id);
-        getTable().put(id,this);
+public abstract class Model {
+    private static final AtomicInteger idGenerator = new AtomicInteger(0);
+    private int id;
+    private Map<String, Object> fieldValues = new HashMap<>();
+
+    public Model() {
+        this.id = idGenerator.incrementAndGet();
+        initializeFields();
     }
-    public static synchronized int generateIdForClass(Class<? extends Model> clazz){
-        idGenerators.putIfAbsent(clazz, new AtomicInteger(0));
-        return idGenerators.get(clazz).incrementAndGet();
+    private void initializeFields(){
+        Field[] fields = this.getClass().getDeclaredFields();
+        Arrays.stream(fields).forEach(field -> {
+            field.setAccessible(true);
+            try{
+                fieldValues.put(field.getName(),field.get(this));
+            } catch (IllegalAccessException e){
+                e.printStackTrace();
+            }
+        });
     }
-    private Map<Integer, Model> getTable() {
-        tables.putIfAbsent(this.getClass(),new HashMap<>());
-        return tables.get(this.getClass());
+    public void save() {
+        updateFieldValues();
+        JasperDb.save(this.getClass(),this.id, new HashMap<>(fieldValues));
     }
-    public void save(){
-        getTable().put(this.pk.getValue(),this);
+    private void updateFieldValues(){
+        Field[] fields = this.getClass().getDeclaredFields();
+        Arrays.stream(fields).forEach(field -> {
+            field.setAccessible(true);
+            try {
+                fieldValues.put(field.getName(),field.get(this));
+            } catch (IllegalAccessException e){
+                e.printStackTrace();
+            }
+        });
     }
-    public void delete(){
-        if(pk == null || pk.getValue() == null){
-            throw new IllegalStateException("Cannot delete a model without an ID");
-        }
-        getTable().remove(pk.getValue());
-    }
-    public static <T extends Model> T findById(Class<T> clazz, int id){
-        return clazz.cast(tables.getOrDefault(clazz, new HashMap<>()).get(id));
+    public static <T extends Model> ObjectManager<T> Objects(Class<T> clazz) {
+        return new DefaultObjectManager<>(clazz);
     }
     public int getId(){
-        return this.pk.getValue();
+        return this.id;
     }
 }
