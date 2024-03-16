@@ -19,7 +19,7 @@ public class ModelTest {
     void testCreateAndSaveModel(){
         TestModel0 model0 = new TestModel0();
         model0.save();
-        assertNotEquals(0,model0.getId());
+        assertNotEquals(Integer.valueOf(1),model0.getId());
         assertEquals(1,model0.getId());
     }
     @Test

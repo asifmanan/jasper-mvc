@@ -1,0 +1,10 @@
+when using the function
+Method setValueMethod = fieldObject.getClass().getMethod("setValue", Object.class);
+the type safety is bypassed, need to figure out a way to ensure type safety
+since all the fields are inherited from our JasperField class which has a type T
+the issue was during runtime and using reflections it isnt possible for the compiler to find a matching function with signature
+for instance setValue(String) or setValue(int)
+
+one possible solution is to save meta data of fields in the database table, and use migrations strategy to set up the tables.
+if the tables are populated and the models are changed then it will be mandatory to run migrations again so that the meta-data is updated
+it will ensure that the model specification and table data are both synchronized.

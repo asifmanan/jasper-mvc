@@ -1,6 +1,6 @@
 package io.jasper.models.fields;
 
-public class CharField extends Field<String> {
+public class CharField extends customField<String> {
     private final int maxLength;
     public CharField(int maxLength) {
         if (maxLength <= 0){

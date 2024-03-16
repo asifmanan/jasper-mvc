@@ -1,6 +1,6 @@
 package io.jasper.models.fields;
 
-public abstract class Field<T> {
+public abstract class customField<T> {
     private T value;
     public T getValue(){
         return value;
