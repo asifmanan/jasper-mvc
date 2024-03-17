@@ -56,70 +56,38 @@ public class DefaultObjectManager<T extends Model> implements ObjectManager<T> {
         }
         return true;
     }
-//    private T convertRowToModel(Map<String, Object> row) {
-//        T instance;
-//        try {
-//            instance = modelClass.getDeclaredConstructor().newInstance();
-//            for (Field field : modelClass.getDeclaredFields()) {
-//                field.setAccessible(true); //!!!
-//
-//                Object fieldObject = field.get(instance);
-//
-//                if (fieldObject != null) {
-//                    Object value = row.get(field.getName());
-//
-//                    if (value != null) {
-//                        // The parameter type of jasperField is T, so we have to manually ensure type safety
-//                        Method setValueMethod = fieldObject.getClass().getMethod("setValue", Object.class);
-//                        // Invoke setValue on the fieldObject with the provided value
-//                        setValueMethod.invoke(fieldObject, value);
-//                    }
-//                }
-//            }
-//        }
-//        catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-//                throw new RuntimeException("Error creating model instance", e);
-//        }
-//
-//        return instance;
-//    }
     private T convertRowToModel(Map<String, Object> row) {
-      T instance;
-      try {
-          instance = modelClass.getDeclaredConstructor().newInstance();
-          for (Field field : modelClass.getDeclaredFields()) {
-              field.setAccessible(true);
+        T instance;
+        try {
+            instance = modelClass.getDeclaredConstructor().newInstance();
+            for (Field field : modelClass.getDeclaredFields()) {
+                field.setAccessible(true);
 
-              Object value = row.get(field.getName());
-              if (value != null) {
-                  Object fieldObject = field.get(instance);
-                  if (fieldObject != null) {
-                      // Handle the case where the field is a custom Field type with setValue method
-                      System.out.println("field type: "+ field.getType());
-                      System.out.println("isAssignable: "+ JasperField.class.isAssignableFrom(field.getType()));
-
-                      System.out.println("Field class loader: " + Field.class.getClassLoader());
-                      System.out.println("field.getType() class loader: " + field.getType().getClassLoader());
-
-
-                      if (JasperField.class.isAssignableFrom(field.getType())) {
-                          try {
-                              System.out.println("Trying set value");
-                              Method setValueMethod = fieldObject.getClass().getMethod("setValue", Object.class);
-                              setValueMethod.invoke(fieldObject, value);
-                          } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                              System.err.println("Failed to invoke setValue on " + field.getName() + ": " + e.getMessage());
-                          }
-                      } else {
-                          // Directly set the value for non-custom Field types or primitive types
-                          field.set(instance, value);
-                      }
-                  }
-              }
-          }
-      } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                Object value = row.get(field.getName());
+                if (value != null) {
+                    Object fieldObject = field.get(instance);
+                    if (fieldObject != null) {
+                    // Check if the field is a subclass of JasperField
+                        if (JasperField.class.isAssignableFrom(field.getType())) {
+                            try {
+                                System.out.println("Trying set value");
+                                Method setValueMethod = fieldObject.getClass().getMethod("setValue", Object.class);
+                                setValueMethod.invoke(fieldObject, value);
+                            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                                System.err.println("Failed to invoke setValue on " + field.getName() + ": " + e.getMessage());
+                            }
+                        } else {
+                            System.out.println("directly setting value");
+                            // Directly setting the value for primitive types,
+                            // however, This should be avoided and in the model class only JaperField subclasses be allowed
+                            field.set(instance, value);
+                        }
+                    }
+                }
+            }
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
           throw new RuntimeException("Error creating model instance", e);
-      }
-      return instance;
+        }
+        return instance;
     }
 }
