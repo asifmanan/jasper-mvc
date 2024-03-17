@@ -5,33 +5,49 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ModelTest {
-    static class TestModel0 extends Model {
+    static class TestModelA extends Model {
 
     }
-    static class TestModel1 extends Model {
+    static class TestModelB extends Model {
 
     }
-    static class TestModel2 extends Model {
+    static class TestModelC extends Model {
 
     }
 
     @Test
+    void testInitialization(){
+        TestModelA model_A1 = new TestModelA();
+        assertNull(model_A1.getId(),"Model instance must have an id Null when created");
+    }
+    @Test
+    void testPostSaveIdAssignment(){
+        TestModelB model_B1 = new TestModelB();
+        assertNull(model_B1.getId(),"Model instance must have an id Null when created");
+        model_B1.save();
+        assertNotNull(model_B1.getId(),"After saving, Model instance id must be a positive integer value");
+    }
+    @Test
     void testCreateAndSaveModel(){
-        TestModel0 model0 = new TestModel0();
+        TestModelA model0 = new TestModelA();
+        TestModelA model00 = new TestModelA();
+
         model0.save();
-        assertNotEquals(Integer.valueOf(1),model0.getId());
+        model00.save();
+
         assertEquals(1,model0.getId());
+        assertEquals(2,model00.getId());
     }
     @Test
     void testFindById(){
-        TestModel1 model1 = new TestModel1();
+        TestModelB model1 = new TestModelB();
         model1.save();
 //        TestModel1 foundModel = Model.findById(TestModel1.class,model1.getId());
 //        assertEquals(model1.getId(),foundModel.getId());
     }
     @Test
     void testDeleteModel(){
-        TestModel1 model1 = new TestModel1();
+        TestModelB model1 = new TestModelB();
         model1.save();
         int id = model1.getId();
 //        model1.delete();
@@ -40,22 +56,17 @@ public class ModelTest {
     }
     @Test
     void testPrimaryKeyUnique(){
-        TestModel1 model1 = new TestModel1();
+        TestModelB model1 = new TestModelB();
         model1.save();
 
-        TestModel1 model11 = new TestModel1();
+        TestModelB model11 = new TestModelB();
         model11.save();
 
         int id1 = model1.getId();
-//        System.out.println("id1= "+ id1);
         int id11 = model11.getId();
-
-        System.out.println("id2= "+ id11);
         assertNotEquals(id1,id11);
 
-        TestModel2 model2 = new TestModel2();
-        int id2 = model2.getId();
-//        System.out.println("id3= "+ id2);
-        assertEquals(1,id2);
+        TestModelC model2 = new TestModelC();
+        assertNull(model2.getId());
     }
 }

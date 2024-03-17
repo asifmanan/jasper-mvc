@@ -1,7 +1,9 @@
 package io.jasper.models;
 
-import io.jasper.managers.DefaultObjectManager;
+import io.jasper.datasystem.datastructure.adapters.DefaultDsAdapter;
+import io.jasper.models.managers.DefaultObjectManager;
 import io.jasper.models.fields.PrimaryKey;
+import io.jasper.models.managers.ObjectManager;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -19,7 +21,7 @@ public abstract class Model {
     }
 
     public void save() {
-        DefaultDbAdapter<? extends Model> adapter = new DefaultDbAdapter<>(this.getClass());
+        DefaultDsAdapter<? extends Model> adapter = new DefaultDsAdapter<>(this.getClass());
         Map<String, Object> localFieldValues = extractFieldValues();
         adapter.save(localFieldValues);
         this.setId(adapter.modelData.getId());

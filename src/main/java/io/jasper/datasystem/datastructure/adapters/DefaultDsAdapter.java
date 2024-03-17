@@ -1,5 +1,7 @@
-package io.jasper.models;
+package io.jasper.datasystem.datastructure.adapters;
 
+import io.jasper.datasystem.datastructure.JasperDs;
+import io.jasper.models.Model;
 import io.jasper.models.fields.JasperField;
 
 import java.lang.reflect.Field;
@@ -9,7 +11,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DefaultDbAdapter<T extends Model> implements DbAdapter {
+public class DefaultDsAdapter<T extends Model> implements DsAdapter {
 //    private Map<String, Object> fieldValues;
     private final Class<T> modelClass;
     public final DataBaseRow modelData = new DataBaseRow();
@@ -36,7 +38,7 @@ public class DefaultDbAdapter<T extends Model> implements DbAdapter {
             this.data = data;
         }
     }
-    public DefaultDbAdapter(Class<T> modelClass) {
+    public DefaultDsAdapter(Class<T> modelClass) {
         this.modelClass = modelClass;
     }
 
@@ -67,7 +69,7 @@ public class DefaultDbAdapter<T extends Model> implements DbAdapter {
     @Override
     public T save(Map passedFieldValues) {
         Map<String, Object> localFieldValues = new HashMap<>(passedFieldValues);
-        DataBaseRow dataBaseRow = JasperDb.saveAndRetrieve(modelClass, localFieldValues);
+        DataBaseRow dataBaseRow = JasperDs.saveAndRetrieve(modelClass, localFieldValues);
 
         if (dataBaseRow == null) {
             return null;

@@ -1,9 +1,8 @@
-package io.jasper.managers;
+package io.jasper.models.managers;
 
-import io.jasper.models.DefaultDbAdapter;
-import io.jasper.models.JasperDb;
+import io.jasper.datasystem.datastructure.adapters.DefaultDsAdapter;
+import io.jasper.datasystem.datastructure.JasperDs;
 import io.jasper.models.Model;
-import io.jasper.models.ObjectManager;
 import io.jasper.models.fields.JasperField;
 
 import java.lang.reflect.Field;
@@ -21,8 +20,8 @@ public class DefaultObjectManager<T extends Model> implements ObjectManager<T> {
 
     @Override
     public T get(Map<String, Object> criteria) {
-        DefaultDbAdapter<? extends Model> adapter = new DefaultDbAdapter<>(modelClass);
-        for(Map<String, Object> row : JasperDb.getTable(modelClass).values()) {
+        DefaultDsAdapter<? extends Model> adapter = new DefaultDsAdapter<>(modelClass);
+        for(Map<String, Object> row : JasperDs.getTable(modelClass).values()) {
             if(matchesCriteria(row, criteria)) {
                 return convertRowToModel(row);
             }
@@ -32,7 +31,7 @@ public class DefaultObjectManager<T extends Model> implements ObjectManager<T> {
     @Override
     public List<T> filter(Map<String, Object> criteria) {
         List<T> results = new ArrayList<>();
-        for(Map<String, Object> row : JasperDb.getTable(modelClass).values()) {
+        for(Map<String, Object> row : JasperDs.getTable(modelClass).values()) {
             if(matchesCriteria(row, criteria)) {
                 results.add(convertRowToModel(row));
             }
@@ -41,7 +40,7 @@ public class DefaultObjectManager<T extends Model> implements ObjectManager<T> {
     }
     @Override
     public T findById(int id) {
-        Map<String, Object> row = JasperDb.findById(modelClass, id);
+        Map<String, Object> row = JasperDs.findById(modelClass, id);
         if (row != null) {
             return convertRowToModel(row);
         }

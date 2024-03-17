@@ -1,10 +1,12 @@
-package io.jasper.models;
+package io.jasper.datasystem.datastructure;
+
+import io.jasper.datasystem.datastructure.adapters.DefaultDsAdapter;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class JasperDb {
+public class JasperDs {
     private static final Map<Class<?>, AtomicInteger> idGenerators = new HashMap<>();
     private static final Map<Class<?>, Map<Integer, Map<String, Object>>> dataBase = new HashMap<>();
 //    public static <T> T save(Class<?> clazz, Map<String, Object> rowData){
@@ -14,7 +16,7 @@ public class JasperDb {
         int id = idGenerators.get(clazz).incrementAndGet();
         table.putIfAbsent(id,rowData);
     }
-    public static DefaultDbAdapter.DataBaseRow saveAndRetrieve(Class<?> clazz, Map<String, Object> rowData){
+    public static DefaultDsAdapter.DataBaseRow saveAndRetrieve(Class<?> clazz, Map<String, Object> rowData){
         Map<Integer, Map<String, Object>> table = dataBase.computeIfAbsent(clazz, k -> new HashMap<>());
         idGenerators.computeIfAbsent(clazz, k -> new AtomicInteger());
         int id = idGenerators.get(clazz).incrementAndGet();
@@ -22,7 +24,7 @@ public class JasperDb {
 
         if(previousRowData == null){
 //            Which means new data inserted successfully
-            DefaultDbAdapter.DataBaseRow dataBaseRow = new DefaultDbAdapter.DataBaseRow();
+            DefaultDsAdapter.DataBaseRow dataBaseRow = new DefaultDsAdapter.DataBaseRow();
             dataBaseRow.setId(id);
             dataBaseRow.setData(rowData);
 
@@ -38,14 +40,14 @@ public class JasperDb {
     }
 
     public static Map<String, Object> findById(Class<?> clazz, Integer id) {
-        Map<Integer, Map<String, Object>> table = JasperDb.dataBase.get(clazz);
+        Map<Integer, Map<String, Object>> table = JasperDs.dataBase.get(clazz);
         if (table != null) {
             return table.get(id);
         }
         return null;
     }
     public static void delete(Class<?> clazz, Integer id){
-        Map<Integer, Map<String, Object>> table = JasperDb.dataBase.get(clazz);
+        Map<Integer, Map<String, Object>> table = JasperDs.dataBase.get(clazz);
         if(table != null)
             table.remove(id);
     }

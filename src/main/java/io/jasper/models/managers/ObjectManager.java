@@ -1,4 +1,6 @@
-package io.jasper.models;
+package io.jasper.models.managers;
+
+import io.jasper.models.Model;
 
 import java.util.List;
 import java.util.Map;
