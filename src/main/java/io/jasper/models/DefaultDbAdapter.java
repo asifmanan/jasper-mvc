@@ -1,5 +1,7 @@
 package io.jasper.models;
 
+import io.jasper.models.fields.JasperField;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -74,56 +76,34 @@ public class DefaultDbAdapter<T extends Model> implements DbAdapter {
         modelData.setData(dataBaseRow.getData());
         modelData.setId(dataBaseRow.getId());
 
-        return convertRowDataToModel(dataBaseRow.data);
-    }
-    private T convertRowDataToModel(Map<String, Object> rowData) {
-    T instance;
-    try {
-        instance = modelClass.getDeclaredConstructor().newInstance();
-        for (Field field : modelClass.getFields()) {
-            Object value = rowData.get(field.getName());
-
-            if (Field.class.isAssignableFrom(field.getType())) {
-
-                Object fieldObject = field.get(instance);
-                // No need to check for null since fields are public and should be initialized already
-                Method setValueMethod = fieldObject.getClass().getMethod("setValue", value.getClass());
-                setValueMethod.invoke(fieldObject, value);
-            } else {
-                // For primitive types and other public fields, directly assign the value
-                if (value == null) {
-                    field.set(instance, null);
-                } else {
-                    field.set(instance, value);
-                }
-            }
-        }
-    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        throw new RuntimeException("Error creating model instance", e);
-        }
-    return instance;
+        return convertRowToModel(dataBaseRow.data);
     }
     private T convertRowToModel(Map<String, Object> row) {
         T instance;
         try {
             instance = modelClass.getDeclaredConstructor().newInstance();
-            System.out.println(instance);
             for (Field field : modelClass.getDeclaredFields()) {
                 field.setAccessible(true);
 
-                Object fieldObject = field.get(instance);
-                System.out.println(fieldObject);
-                if (fieldObject != null) {
-                    Object value = row.get(field.getName());
-                    System.out.println("field Name:" +field.getName());
-
-                    System.out.println(value.getClass());
-                    if (value != null) {
-                        // The parameter type of jasperField is T, so we have to manually ensure type safety
-                        Method setValueMethod = fieldObject.getClass().getMethod("setValue", Object.class);
-                        // Invoke setValue on the fieldObject with the provided value
-                        System.out.println("field Object: "+fieldObject);
-                        setValueMethod.invoke(fieldObject, value);
+                Object value = row.get(field.getName());
+                if (value != null) {
+                    Object fieldObject = field.get(instance);
+                    if (fieldObject != null) {
+                        // Check if the field is a subclass of JasperField
+                        if (JasperField.class.isAssignableFrom(field.getType())) {
+                            try {
+                                System.out.println("Trying set value");
+                                Method setValueMethod = fieldObject.getClass().getMethod("setValue", Object.class);
+                                setValueMethod.invoke(fieldObject, value);
+                            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                                System.err.println("Failed to invoke setValue on " + field.getName() + ": " + e.getMessage());
+                            }
+                        } else {
+                            System.out.println("directly setting value");
+                            // Directly setting the value for primitive types,
+                            // however, This should be avoided and in the model class only JaperField subclasses be allowed
+                            field.set(instance, value);
+                        }
                     }
                 }
             }
