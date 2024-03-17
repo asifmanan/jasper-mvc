@@ -5,7 +5,7 @@ package io.jasper.models.fields;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class IntegerFieldTest {
+public class IntegerCustomFieldTest {
     @Test
     public void testInitialization(){
         IntegerField field = new IntegerField();

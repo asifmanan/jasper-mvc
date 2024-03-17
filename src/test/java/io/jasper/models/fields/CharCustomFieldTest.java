@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CharFieldTest {
+public class CharCustomFieldTest {
     @Test
     public void testInitializationWithValidMaxLength(){
         int maxLength = 1;

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BooleanFieldTest {
+public class BooleanCustomFieldTest {
     @Test
     public void testInitialization(){
         BooleanField field = new BooleanField();

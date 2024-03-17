@@ -3,26 +3,45 @@ package io.jasper.models.fields;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class PrimaryKeyTest {
     @Test
-    public void testInitializationAndIncrement(){
-//  Since the idGenerator is persistent, therefore increment and initialization tests
-//  are combined and cannot be separated.
+    public void testInitialization(){
+//  Updated the test, PrimaryKey field no longer handles increments
+//  Increment logic handled at Data layer
         PrimaryKey key = new PrimaryKey();
-        int ExpValue = 1;
-        assertEquals(ExpValue,key.getValue(),"Primary key should initialize with 1");
+        assertNull(key.getValue(), "Primary key should initialize with a null value");
+    }
+    @Test
+    public void testSetValueForInteger(){
+        PrimaryKey key = new PrimaryKey();
+        Integer value = 10;
+        key.setValue(value);
+        assertEquals(value, key.getValue(),"Value should be set by using setValue()");
+    }
+    @Test
+    public void testSetValueForInt(){
+        PrimaryKey key = new PrimaryKey();
+        int value = 10;
+        key.setValue(value);
+        assertEquals(value, key.getValue());
+    }
+    @Test
+    public void testSetValueForNull(){
+        PrimaryKey key = new PrimaryKey();
+        key.setValue(null);
+        assertNull(key.getValue(),"Value can be set and reset to null");
+    }
+    @Test
+    public void testSetValueForInvalidValue(){
+        PrimaryKey key = new PrimaryKey();
+        int value0 = 0;
+        int value_1 = -1;
+        key.setValue(value0);
+        assertNull(key.getValue(),"Value less than 1 should be set as null");
 
-        PrimaryKey key1 = new PrimaryKey();
-        ExpValue += 1;
-        assertEquals(ExpValue,key1.getValue(),"Instantiation should increment PrimaryKey field with 1");
-
-        PrimaryKey key2 = new PrimaryKey();
-        ExpValue += 1;
-        assertEquals(ExpValue,key2.getValue(),"Instantiation should increment PrimaryKey field with 1");
-
-        PrimaryKey key3 = new PrimaryKey();
-        ExpValue += 1;
-        assertEquals(ExpValue,key3.getValue(),"Instantiation should increment PrimaryKey field with 1");
+        key.setValue(value_1);
+        assertNull(key.getValue(),"Value less than 1 should be set as null");
     }
 }

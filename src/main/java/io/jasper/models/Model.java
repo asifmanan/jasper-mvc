@@ -1,41 +1,63 @@
 package io.jasper.models;
 
-import io.jasper.models.fields.IntegerField;
+import io.jasper.datasystem.datastructure.adapters.DefaultDsAdapter;
+import io.jasper.models.managers.DefaultObjectManager;
+import io.jasper.models.fields.PrimaryKey;
+import io.jasper.models.managers.ObjectManager;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class Model {
-    private static final Map<Class<? extends Model>, Map<Integer, Model>> tables = new HashMap<>();
-    private static final Map<Class<? extends Model>, AtomicInteger> idGenerators = new HashMap<>();
-    protected IntegerField pk = new IntegerField();
-    public Model(){
-        int id = generateIdForClass(getClass());
-        this.pk.setValue(id);
-        getTable().put(id,this);
+public abstract class Model {
+
+    private Map<String, Object> fieldValues = new HashMap<>();
+    public PrimaryKey id = new PrimaryKey();
+
+    public Model() {
     }
-    public static synchronized int generateIdForClass(Class<? extends Model> clazz){
-        idGenerators.putIfAbsent(clazz, new AtomicInteger(0));
-        return idGenerators.get(clazz).incrementAndGet();
+
+    public void save() {
+        DefaultDsAdapter<? extends Model> adapter = new DefaultDsAdapter<>(this.getClass());
+        Map<String, Object> localFieldValues = extractFieldValues();
+        adapter.save(localFieldValues);
+        this.setId(adapter.modelData.getId());
+//        JasperDb.save(this.getClass(), new HashMap<>(fieldValues));
     }
-    private Map<Integer, Model> getTable() {
-        tables.putIfAbsent(this.getClass(),new HashMap<>());
-        return tables.get(this.getClass());
-    }
-    public void save(){
-        getTable().put(this.pk.getValue(),this);
-    }
-    public void delete(){
-        if(pk == null || pk.getValue() == null){
-            throw new IllegalStateException("Cannot delete a model without an ID");
+
+    private Map<String, Object> extractFieldValues() {
+    Map<String, Object> localFieldValues = new HashMap<>();
+    Field[] fields = this.getClass().getDeclaredFields();
+    Arrays.stream(fields).forEach(field -> {
+        field.setAccessible(true);
+
+        try {
+            Object fieldObject = field.get(this);
+            if (fieldObject != null) {
+                Method getValueMethod = fieldObject.getClass().getMethod("getValue");
+                Object value = getValueMethod.invoke(fieldObject);
+//                System.out.println("Value: " + value);
+                localFieldValues.put(field.getName(), value);
+            } else {
+                // Handle or log the null fieldObject appropriately
+                localFieldValues.put(field.getName(), null);
+            }
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
         }
-        getTable().remove(pk.getValue());
+    });
+    return localFieldValues;
+}
+    public static <T extends Model> ObjectManager<T> Objects(Class<T> clazz) {
+        return new DefaultObjectManager<>(clazz);
     }
-    public static <T extends Model> T findById(Class<T> clazz, int id){
-        return clazz.cast(tables.getOrDefault(clazz, new HashMap<>()).get(id));
+    public Integer getId(){
+        return this.id.getValue();
     }
-    public int getId(){
-        return this.pk.getValue();
+    private void setId(int id){
+        this.id.setValue(id);
     }
 }

@@ -1,14 +1,22 @@
 package io.jasper.models.fields;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-public class PrimaryKey {
-    private static final AtomicInteger idGenerator = new AtomicInteger();
-    private final int value;
+public class PrimaryKey extends JasperField<Integer> {
     public PrimaryKey(){
-        this.value = idGenerator.incrementAndGet();
+        super.setValue(null);
     }
-    public int getValue(){
-        return this.value;
+    public void setValue(Integer val){
+        if (val != null && val < 1) {
+            super.setValue(null);
+        } else {
+            super.setValue(val);
+        }
+    }
+    public void setValue(int val){
+        if (val < 1) {
+            super.setValue(null);
+        } else {
+            // Autoboxing will convert to Integer
+            super.setValue(val);
+        }
     }
 }
