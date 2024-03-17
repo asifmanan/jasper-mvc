@@ -13,17 +13,16 @@ import java.util.Map;
 public abstract class Model {
 
     private Map<String, Object> fieldValues = new HashMap<>();
-    public PrimaryKey id;
+    public PrimaryKey id = new PrimaryKey();
 
     public Model() {
-
     }
 
     public void save() {
         DefaultDbAdapter<? extends Model> adapter = new DefaultDbAdapter<>(this.getClass());
         Map<String, Object> localFieldValues = extractFieldValues();
         adapter.save(localFieldValues);
-        this.setValue(adapter.modelData.getId());
+        this.setId(adapter.modelData.getId());
 //        JasperDb.save(this.getClass(), new HashMap<>(fieldValues));
     }
 
@@ -53,10 +52,10 @@ public abstract class Model {
     public static <T extends Model> ObjectManager<T> Objects(Class<T> clazz) {
         return new DefaultObjectManager<>(clazz);
     }
-    public Integer getValue(){
+    public Integer getId(){
         return this.id.getValue();
     }
-    private void setValue(int id){
+    private void setId(int id){
         this.id.setValue(id);
     }
 }
