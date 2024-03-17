@@ -1,6 +1,7 @@
 package io.jasper.models;
 
 import io.jasper.managers.DefaultObjectManager;
+import io.jasper.models.fields.PrimaryKey;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -12,7 +13,7 @@ import java.util.Map;
 public abstract class Model {
 
     private Map<String, Object> fieldValues = new HashMap<>();
-    public Integer id;
+    public PrimaryKey id;
 
     public Model() {
 
@@ -22,7 +23,7 @@ public abstract class Model {
         DefaultDbAdapter<? extends Model> adapter = new DefaultDbAdapter<>(this.getClass());
         Map<String, Object> localFieldValues = extractFieldValues();
         adapter.save(localFieldValues);
-        this.setId(adapter.modelData.getId());
+        this.setValue(adapter.modelData.getId());
 //        JasperDb.save(this.getClass(), new HashMap<>(fieldValues));
     }
 
@@ -52,10 +53,10 @@ public abstract class Model {
     public static <T extends Model> ObjectManager<T> Objects(Class<T> clazz) {
         return new DefaultObjectManager<>(clazz);
     }
-    public Integer getId(){
-        return this.id;
+    public Integer getValue(){
+        return this.id.getValue();
     }
-    private void setId(int id){
-        this.id = id;
+    private void setValue(int id){
+        this.id.setValue(id);
     }
 }
