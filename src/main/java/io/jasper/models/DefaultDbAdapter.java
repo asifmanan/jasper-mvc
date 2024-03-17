@@ -80,12 +80,12 @@ public class DefaultDbAdapter<T extends Model> implements DbAdapter {
     T instance;
     try {
         instance = modelClass.getDeclaredConstructor().newInstance();
-        for (Field field : modelClass.getFields()) {  // Using getFields to access public fields
+        for (Field field : modelClass.getFields()) {
             Object value = rowData.get(field.getName());
 
             if (Field.class.isAssignableFrom(field.getType())) {
-                Object fieldObject = field.get(instance);
 
+                Object fieldObject = field.get(instance);
                 // No need to check for null since fields are public and should be initialized already
                 Method setValueMethod = fieldObject.getClass().getMethod("setValue", value.getClass());
                 setValueMethod.invoke(fieldObject, value);

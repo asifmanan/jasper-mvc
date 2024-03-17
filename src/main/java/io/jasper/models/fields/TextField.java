@@ -1,6 +1,6 @@
 package io.jasper.models.fields;
 
-public class TextField extends customField<String> {
+public class TextField extends JasperField<String> {
     public TextField() {
         setValue(null);
     }

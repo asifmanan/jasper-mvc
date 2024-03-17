@@ -1,8 +1,10 @@
 package io.jasper.managers;
 
+import io.jasper.models.DefaultDbAdapter;
 import io.jasper.models.JasperDb;
 import io.jasper.models.Model;
 import io.jasper.models.ObjectManager;
+import io.jasper.models.fields.JasperField;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -19,6 +21,7 @@ public class DefaultObjectManager<T extends Model> implements ObjectManager<T> {
 
     @Override
     public T get(Map<String, Object> criteria) {
+        DefaultDbAdapter<? extends Model> adapter = new DefaultDbAdapter<>(modelClass);
         for(Map<String, Object> row : JasperDb.getTable(modelClass).values()) {
             if(matchesCriteria(row, criteria)) {
                 return convertRowToModel(row);
@@ -53,34 +56,70 @@ public class DefaultObjectManager<T extends Model> implements ObjectManager<T> {
         }
         return true;
     }
+//    private T convertRowToModel(Map<String, Object> row) {
+//        T instance;
+//        try {
+//            instance = modelClass.getDeclaredConstructor().newInstance();
+//            for (Field field : modelClass.getDeclaredFields()) {
+//                field.setAccessible(true); //!!!
+//
+//                Object fieldObject = field.get(instance);
+//
+//                if (fieldObject != null) {
+//                    Object value = row.get(field.getName());
+//
+//                    if (value != null) {
+//                        // The parameter type of jasperField is T, so we have to manually ensure type safety
+//                        Method setValueMethod = fieldObject.getClass().getMethod("setValue", Object.class);
+//                        // Invoke setValue on the fieldObject with the provided value
+//                        setValueMethod.invoke(fieldObject, value);
+//                    }
+//                }
+//            }
+//        }
+//        catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+//                throw new RuntimeException("Error creating model instance", e);
+//        }
+//
+//        return instance;
+//    }
     private T convertRowToModel(Map<String, Object> row) {
-    T instance;
-    try {
-        instance = modelClass.getDeclaredConstructor().newInstance();
-        System.out.println(instance);
-        for (Field field : modelClass.getDeclaredFields()) {
-            field.setAccessible(true);
+      T instance;
+      try {
+          instance = modelClass.getDeclaredConstructor().newInstance();
+          for (Field field : modelClass.getDeclaredFields()) {
+              field.setAccessible(true);
 
-            Object fieldObject = field.get(instance);
-            System.out.println(fieldObject);
-            if (fieldObject != null) {
-                Object value = row.get(field.getName());
-                System.out.println("field Name:" +field.getName());
+              Object value = row.get(field.getName());
+              if (value != null) {
+                  Object fieldObject = field.get(instance);
+                  if (fieldObject != null) {
+                      // Handle the case where the field is a custom Field type with setValue method
+                      System.out.println("field type: "+ field.getType());
+                      System.out.println("isAssignable: "+ JasperField.class.isAssignableFrom(field.getType()));
 
-                System.out.println(value.getClass());
-                if (value != null) {
-                    // The parameter type of jasperField is T, so we have to manually ensure type safety
-                    Method setValueMethod = fieldObject.getClass().getMethod("setValue", Object.class);
-                    // Invoke setValue on the fieldObject with the provided value
-                    System.out.println("field Object: "+fieldObject);
-                    setValueMethod.invoke(fieldObject, value);
-                }
-            }
-        }
-    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        throw new RuntimeException("Error creating model instance", e);
+                      System.out.println("Field class loader: " + Field.class.getClassLoader());
+                      System.out.println("field.getType() class loader: " + field.getType().getClassLoader());
+
+
+                      if (JasperField.class.isAssignableFrom(field.getType())) {
+                          try {
+                              System.out.println("Trying set value");
+                              Method setValueMethod = fieldObject.getClass().getMethod("setValue", Object.class);
+                              setValueMethod.invoke(fieldObject, value);
+                          } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                              System.err.println("Failed to invoke setValue on " + field.getName() + ": " + e.getMessage());
+                          }
+                      } else {
+                          // Directly set the value for non-custom Field types or primitive types
+                          field.set(instance, value);
+                      }
+                  }
+              }
+          }
+      } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+          throw new RuntimeException("Error creating model instance", e);
+      }
+      return instance;
     }
-    return instance;
-}
-
 }

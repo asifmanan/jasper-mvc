@@ -8,3 +8,7 @@ for instance setValue(String) or setValue(int)
 one possible solution is to save meta data of fields in the database table, and use migrations strategy to set up the tables.
 if the tables are populated and the models are changed then it will be mandatory to run migrations again so that the meta-data is updated
 it will ensure that the model specification and table data are both synchronized.
+
+So there is a design decision that should I make my CustomField abstract class extend the Java Field class, so in order to
+align with certain java features like reflections, its a good choice.
+However, there are ways to bypass that but they doesnt seem standard.
