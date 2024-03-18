@@ -14,35 +14,23 @@ import java.util.Map;
 public class DefaultDsAdapter<T extends Model> implements DsAdapter {
 //    private Map<String, Object> fieldValues;
     private final Class<T> modelClass;
-    public final DataBaseRow modelData = new DataBaseRow();
-    public static class DataBaseRow{
-        private int id;
-        private Map<String, Object> data;
-        public DataBaseRow(){
-
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public void setId(int id) {
-            this.id = id;
-        }
-
-        public Map<String, Object> getData() {
-            return data;
-        }
-
-        public void setData(Map<String, Object> data) {
-            this.data = data;
-        }
-    }
+    private TableRecord tableRecord = new TableRecord();
     public DefaultDsAdapter(Class<T> modelClass) {
         this.modelClass = modelClass;
     }
+    public int getTableRecordId() {
+        return tableRecord.getId();
+    }
+    public Map<String, Object> getTableRecordData() {
+        return tableRecord.getData();
+    }
 
+    public T getById(int id){
+        Map<String, Object> row = JasperDs.findById(modelClass, id);
 
+//        T instance = convertRowToModel(row);
+        return null;
+    }
     @Override
     public Map<String, Object> convertModelToRow(Object instance) {
 //        fieldValues = new HashMap<>();
@@ -69,16 +57,21 @@ public class DefaultDsAdapter<T extends Model> implements DsAdapter {
     @Override
     public T save(Map passedFieldValues) {
         Map<String, Object> localFieldValues = new HashMap<>(passedFieldValues);
-        DataBaseRow dataBaseRow = JasperDs.saveAndRetrieve(modelClass, localFieldValues);
+        tableRecord = JasperDs.saveAndRetrieve(modelClass, localFieldValues);
 
-        if (dataBaseRow == null) {
+
+        if (tableRecord == null) {
+            System.out.println("tableRecord is null");
             return null;
         }
 
-        modelData.setData(dataBaseRow.getData());
-        modelData.setId(dataBaseRow.getId());
+//        tableRecord.setData(tableRecord2.getData());
+//        tableRecord.setId(tableRecord2.getId());
+        System.out.println("# Printing table record");
+        System.out.print(tableRecord.getData());
+        System.out.print(" [id:"+tableRecord.getId()+"]\n");
 
-        return convertRowToModel(dataBaseRow.data);
+        return convertRowToModel(tableRecord.getData());
     }
     private T convertRowToModel(Map<String, Object> row) {
         T instance;
@@ -94,7 +87,7 @@ public class DefaultDsAdapter<T extends Model> implements DsAdapter {
                         // Check if the field is a subclass of JasperField
                         if (JasperField.class.isAssignableFrom(field.getType())) {
                             try {
-                                System.out.println("Trying set value");
+//                                System.out.println("Trying set value");
                                 Method setValueMethod = fieldObject.getClass().getMethod("setValue", Object.class);
                                 setValueMethod.invoke(fieldObject, value);
                             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {

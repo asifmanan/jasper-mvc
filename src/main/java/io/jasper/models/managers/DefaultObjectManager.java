@@ -41,6 +41,9 @@ public class DefaultObjectManager<T extends Model> implements ObjectManager<T> {
     @Override
     public T findById(int id) {
         Map<String, Object> row = JasperDs.findById(modelClass, id);
+
+        DefaultDsAdapter<? extends Model> adapter = new DefaultDsAdapter<>(modelClass);
+
         if (row != null) {
             return convertRowToModel(row);
         }
@@ -69,7 +72,7 @@ public class DefaultObjectManager<T extends Model> implements ObjectManager<T> {
                     // Check if the field is a subclass of JasperField
                         if (JasperField.class.isAssignableFrom(field.getType())) {
                             try {
-                                System.out.println("Trying set value");
+//                                System.out.println("Trying set value");
                                 Method setValueMethod = fieldObject.getClass().getMethod("setValue", Object.class);
                                 setValueMethod.invoke(fieldObject, value);
                             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {

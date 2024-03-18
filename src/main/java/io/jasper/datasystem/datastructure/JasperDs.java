@@ -1,6 +1,6 @@
 package io.jasper.datasystem.datastructure;
 
-import io.jasper.datasystem.datastructure.adapters.DefaultDsAdapter;
+import io.jasper.datasystem.datastructure.adapters.TableRecord;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +16,7 @@ public class JasperDs {
         int id = idGenerators.get(clazz).incrementAndGet();
         table.putIfAbsent(id,rowData);
     }
-    public static DefaultDsAdapter.DataBaseRow saveAndRetrieve(Class<?> clazz, Map<String, Object> rowData){
+    public static TableRecord saveAndRetrieve(Class<?> clazz, Map<String, Object> rowData){
         Map<Integer, Map<String, Object>> table = dataBase.computeIfAbsent(clazz, k -> new HashMap<>());
         idGenerators.computeIfAbsent(clazz, k -> new AtomicInteger());
         int id = idGenerators.get(clazz).incrementAndGet();
@@ -24,12 +24,13 @@ public class JasperDs {
 
         if(previousRowData == null){
 //            Which means new data inserted successfully
-            DefaultDsAdapter.DataBaseRow dataBaseRow = new DefaultDsAdapter.DataBaseRow();
-            dataBaseRow.setId(id);
-            dataBaseRow.setData(rowData);
+            TableRecord tableRecord = new TableRecord();
+            tableRecord.setId(id);
+            tableRecord.setData(rowData);
 
-            return dataBaseRow;
+            return tableRecord;
         }
+        System.out.println("## Returning null from JasperDs");
         return null;
     }
     public static Map<Integer, Map<String,Object>> getTable(Class<?> clazz){

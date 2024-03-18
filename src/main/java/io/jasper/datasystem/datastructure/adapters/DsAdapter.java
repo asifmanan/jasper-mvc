@@ -6,5 +6,5 @@ import java.util.Map;
 
 public interface DsAdapter<T extends Model> {
     Map<String, Object> convertModelToRow(Object instance);
-    <U extends Model> T save(Map<String, Object> passedFieldValues);
+    <U extends Model> U save(Map<String, Object> passedFieldValues);
 }
