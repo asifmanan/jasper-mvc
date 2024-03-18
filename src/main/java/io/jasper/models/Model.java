@@ -20,17 +20,22 @@ public abstract class Model {
     public Model() {
     }
 
-    public void save() {
-        DefaultDsAdapter<? extends Model> adapter = new DefaultDsAdapter<>(this.getClass());
+    public <T extends Model> T save() {
+        DefaultDsAdapter<T> adapter = new DefaultDsAdapter<>((Class<T>) this.getClass());
         Map<String, Object> localFieldValues = extractFieldValues();
-        adapter.save(localFieldValues);
+        T object = adapter.save(localFieldValues, this.id.getValue());
+//        object.setId(adapter.getTableRecordId());
         this.setId(adapter.getTableRecordId());
+        return object;
+
 //        JasperDb.save(this.getClass(), new HashMap<>(fieldValues));
     }
+
+
     public void saveOrUpdate(){
         if(this.id != null) {
             DefaultDsAdapter<? extends Model> adapter = new DefaultDsAdapter<>(this.getClass());
-            Map<String, Object> localIdFieldValues = extractFieldValues();
+            Map<String, Object> localFieldValues = extractFieldValues();
         }
 
     }

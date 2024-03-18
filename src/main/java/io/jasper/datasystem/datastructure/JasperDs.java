@@ -17,13 +17,27 @@ public class JasperDs {
         table.putIfAbsent(id,rowData);
     }
     public static TableRecord saveAndRetrieve(Class<?> clazz, Map<String, Object> rowData){
+        return saveAndRetrieve(clazz, rowData, null);
+    }
+    public static TableRecord saveAndRetrieve(Class<?> clazz, Map<String, Object> rowData, Integer id){
         Map<Integer, Map<String, Object>> table = dataBase.computeIfAbsent(clazz, k -> new HashMap<>());
-        idGenerators.computeIfAbsent(clazz, k -> new AtomicInteger());
-        int id = idGenerators.get(clazz).incrementAndGet();
-        Map<String, Object> previousRowData = table.putIfAbsent(id, rowData);
-
-        if(previousRowData == null){
+        if(id == null){
+            idGenerators.computeIfAbsent(clazz, k -> new AtomicInteger());
+            id = idGenerators.get(clazz).incrementAndGet();
+            Map<String, Object> previousRowData = table.putIfAbsent(id, rowData);
+            if(previousRowData == null){
 //            Which means new data inserted successfully
+                TableRecord tableRecord = new TableRecord();
+                tableRecord.setId(id);
+                tableRecord.setData(rowData);
+
+                return tableRecord;
+            }
+
+        } else {
+
+            table.replace(id, rowData);
+
             TableRecord tableRecord = new TableRecord();
             tableRecord.setId(id);
             tableRecord.setData(rowData);

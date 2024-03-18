@@ -56,8 +56,13 @@ public class DefaultDsAdapter<T extends Model> implements DsAdapter {
 
     @Override
     public T save(Map passedFieldValues) {
-        Map<String, Object> localFieldValues = new HashMap<>(passedFieldValues);
-        tableRecord = JasperDs.saveAndRetrieve(modelClass, localFieldValues);
+        return save(passedFieldValues, null);
+    }
+
+    public T save(Map passedFieldValues, Integer id) {
+        Map<String, Object> localFieldValues = new HashMap<String, Object>(passedFieldValues);
+
+        tableRecord = JasperDs.saveAndRetrieve(modelClass, localFieldValues, id);
 
 
         if (tableRecord == null) {
@@ -71,9 +76,14 @@ public class DefaultDsAdapter<T extends Model> implements DsAdapter {
         System.out.print(tableRecord.getData());
         System.out.print(" [id:"+tableRecord.getId()+"]\n");
 
-        return convertRowToModel(tableRecord.getData());
+        return convertRowToModel(tableRecord.getData(), tableRecord.getId());
     }
-    private T convertRowToModel(Map<String, Object> row) {
+//    @Override
+//    public T createOrUpdate(Map fieldValues, int id){
+//        Map<String, Object> localFieldValues = new HashMap<String, Object>(fieldValues);
+//
+//    }
+    private T convertRowToModel(Map<String, Object> row, Integer id) {
         T instance;
         try {
             instance = modelClass.getDeclaredConstructor().newInstance();
@@ -104,6 +114,12 @@ public class DefaultDsAdapter<T extends Model> implements DsAdapter {
             }
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException("Error creating model instance", e);
+        }
+        Class<?> superclass = modelClass.getSuperclass();
+        Field[] superclassFields = superclass.getDeclaredFields();
+        for (Field field : superclassFields) {
+            System.out.println("SuperField: "+field.getName());
+//            Method setValueMethod = field.getClass().getMethod("setValue", Object.class);
         }
         return instance;
     }
